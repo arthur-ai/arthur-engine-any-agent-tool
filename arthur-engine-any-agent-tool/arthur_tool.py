@@ -60,3 +60,37 @@ class ArthurEngineClient:
         response.raise_for_status()  # Raise an exception for bad status codes
         
         return response.json()
+
+    def validate_response(
+        self,
+        inference_id: str,
+        response: str,
+        context: str
+    ) -> Dict[str, Any]:
+        """
+        Validate a response using the Arthur Engine API.
+        
+        Args:
+            inference_id: The ID of the inference to validate
+            response: The response text to validate
+            context: The context information for validation
+            
+        Returns:
+            Dict containing the API response
+        """
+        url = f"{self.host}/api/v2/tasks/{self.task_id}/validate_response/{inference_id}"
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "response": response,
+            "context": context
+        }
+        
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        return response.json()
