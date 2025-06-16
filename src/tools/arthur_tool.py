@@ -3,7 +3,30 @@ import requests
 from typing import Optional, Dict, Any
 
 
-class ArthurEngineClient:
+class ArthurTool:
+    """
+    A tool for validating prompts and responses using the Arthur Engine API.
+    
+    This tool provides functionality to validate both prompts and responses against
+    a specified task in the Arthur Engine. It can be used to ensure that prompts
+    and responses meet certain criteria or guidelines defined in the Arthur Engine.
+    
+    The tool requires authentication via an API key and can be configured either
+    through constructor parameters or environment variables (ARTHUR_ENGINE_HOST and
+    ARTHUR_ENGINE_API_KEY).
+    
+    The tool is also callable, making it compatible with AnyAgent tool interfaces.
+    When called, it first validates the prompt and optionally validates the response
+    if one is provided.
+    
+    Attributes:
+        task_id (str): The ID of the task to validate against
+        conversation_id (str): The ID of the conversation
+        user_id (str): The ID of the user
+        host (str): The Arthur Engine host URL
+        api_key (str): The Arthur Engine API key
+    """
+    
     def __init__(
         self,
         task_id: str,
@@ -94,3 +117,36 @@ class ArthurEngineClient:
         response.raise_for_status()  # Raise an exception for bad status codes
         
         return response.json()
+
+    def __call__(
+        self,
+        prompt: str,
+        response: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Make the class callable for AnyAgent tool compatibility.
+        
+        Args:
+            prompt: The prompt text to validate (required)
+            response: The response to validate (optional)
+            
+        Returns:
+            Dict containing the API response
+            
+        Raises:
+            ValueError: If the prompt validation response doesn't contain an inference ID
+        """
+        # First validate the prompt
+        prompt_response = self.validate_prompt(prompt)
+        
+        # If no response provided, return the prompt validation result
+        if response is None:
+            return prompt_response
+            
+        # Get the inference ID from the prompt validation response
+        inference_id = prompt_response.get("inference_id")
+        if not inference_id:
+            raise ValueError("Prompt validation response did not contain an inference ID")
+            
+        # Validate the response using the inference ID from prompt validation
+        return self.validate_response(inference_id, response, prompt)
