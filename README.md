@@ -24,13 +24,49 @@ The Arthur Tool provides a way to:
      - API Key
      - Task ID (created when setting up your model)
 
-3. Environment Variables
+3. Set Up OpenAI API Key
+   - Create an account at https://platform.openai.com/signup if you haven't already
+   - Generate an API key from https://platform.openai.com/api-keys
+   - Set the environment variable:
+     ```bash
+     export OPENAI_API_KEY="your_openai_api_key"
+     ```
+
+4. Environment Variables
    Set the following environment variables:
    ```bash
    export ARTHUR_ENGINE_URL="your_engine_url"
    export ARTHUR_API_KEY="your_api_key"
    export ARTHUR_TASK_ID="your_task_id"
+   export OPENAI_API_KEY="your_openai_api_key"
    ```
+
+## Running the Example
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/your-username/arthur-engine-any-agent-tool.git
+   cd arthur-engine-any-agent-tool
+   ```
+
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Run the example agent:
+   ```bash
+   python examples/agent.py
+   ```
+
+The example agent will:
+- Initialize the Arthur Tool with your credentials
+- Create an AnyAgent instance with the tool configured
+- Process a sample question ("What is the capital of France?")
+- Validate both the question and response through Arthur Engine
+- Print the final response
+
+You can modify the example by changing the prompt in `examples/agent.py` to test different questions and see how the validation works.
 
 ## Usage Example
 
