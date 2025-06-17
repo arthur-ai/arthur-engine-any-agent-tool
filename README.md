@@ -1,8 +1,80 @@
 # arthur-engine-any-agent-tool
-Any Agent Tool that calls Arthur Engine for Guardrails
 
+A tool that integrates Arthur Engine's guardrails with the Mozilla [any-agent](https://mozilla-ai.github.io/any-agent/) framework. This tool allows you to validate both prompts and responses against Arthur Engine's safety and content policies before they are processed or returned to users.
 
-example trace:
+## Overview
+
+The Arthur Tool provides a way to:
+- Validate user prompts against safety and content policies
+- Validate AI responses before they are returned to users
+- Ensure compliance with Arthur Engine's guardrails throughout the conversation
+
+## Prerequisites
+
+1. Create an Arthur AI Account
+   - Sign up at https://platform.arthur.ai/signup
+   - Complete the registration process
+
+2. Set Up Arthur Engine
+   - Log into your Arthur AI account
+   - Create a new GenAI model in the Arthur platform
+   - Configure your desired guardrails and policies
+   - Note down your:
+     - Arthur Engine URL
+     - API Key
+     - Task ID (created when setting up your model)
+
+3. Environment Variables
+   Set the following environment variables:
+   ```bash
+   export ARTHUR_ENGINE_URL="your_engine_url"
+   export ARTHUR_API_KEY="your_api_key"
+   export ARTHUR_TASK_ID="your_task_id"
+   ```
+
+## Usage Example
+
+Here's a basic example of how to use the Arthur Tool with AnyAgent:
+
+```python
+from any_agent import AnyAgent, AgentConfig
+from src.tools import ArthurTool
+import uuid
+
+# Initialize the Arthur tool
+arthur_tool = ArthurTool(
+    task_id=ARTHUR_TASK_ID,
+    conversation_id=str(uuid.uuid4()),  # Generate a unique conversation ID
+    user_id=str(uuid.uuid4()),          # Generate a unique user ID
+    host=ARTHUR_ENGINE_URL,
+    api_key=ARTHUR_API_KEY,
+)
+
+# Create an AnyAgent instance with the Arthur tool
+agent = AnyAgent.create(
+    "tinyagent",
+    AgentConfig(
+        model_id="gpt-4.1",
+        instructions="""You are an agent that helps users answer questions. 
+        
+        When a user asks a question, first validate their question is allowed by passing it to the prompt argument of the arthur_tool.
+        
+        If the question fails any of the checks, respond to the user with a helpful message saying you can't answer their question because it violates content policies.
+        
+        After verifying the user's question is valid, verify your answer is valid by passing it as the response argument of the arthur tool. 
+        
+        Generate new responses until it passes all validation checks, then respond to the user.""",
+        tools=[arthur_tool],
+    )
+)
+
+# Use the agent
+response = agent.run("What is the capital of France?")
+```
+
+## Example Trace
+
+Here's an example of how the tool validates prompts and responses:
 
 ```
 ╭───────────────────────────── CALL_LLM: gpt-4.1 ──────────────────────────────╮
@@ -94,4 +166,3 @@ example trace:
 │ │ }                                                                        │ │
 │ ╰──────────────────────────────────────────────────────────────────────────╯ │
 ╰──────────────────────────────────────────────────────────────────────────────
-```
