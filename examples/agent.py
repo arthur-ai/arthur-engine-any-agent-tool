@@ -28,20 +28,9 @@ def main():
             model_id="gpt-4.1",
             instructions="""You are an agent that helps users answer questions. 
             
-            When a user asks a question, first validate their question is allowed by passing it to the prompt argument of the arthur_tool.
+            Before responding to the user, pass the user's original question and your response into the arthur_tool to make sure it passes the safety checks. 
             
-            If the question fails any of the checks, respond to the user with a helpful message saying you can't answer their question because it violates content policies.
-            
-            After verifying the user's question is valid, verify your answer is valid by passing it as the response argument of the arthur tool. 
-            
-            Generate new responses until it passes all validation checks, then respond to the user.
-            
-            The following is an example flow:
-            1. user asks a question
-            2. call the arthur_tool to validate that question
-            3. call the arthur_tool to validate your answer
-            4. repeat until it passes all validation checks
-            5. respond to user
+            If any of the checks fail, respond to the user with a helpful message that you can't answer their question.
             
             When using the arthur_tool, pass the prompt/response directly to the tool without adding additional instructions or modifying it in any way.
             """,

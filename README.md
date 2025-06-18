@@ -93,13 +93,12 @@ agent = AnyAgent.create(
         model_id="gpt-4.1",
         instructions="""You are an agent that helps users answer questions. 
         
-        When a user asks a question, first validate their question is allowed by passing it to the prompt argument of the arthur_tool.
+        Before responding to the user, pass the user's original question and your response into the arthur_tool to make sure it passes the safety checks. 
         
-        If the question fails any of the checks, respond to the user with a helpful message saying you can't answer their question because it violates content policies.
+        If any of the checks fail, respond to the user with a helpful message that you can't answer their question.
         
-        After verifying the user's question is valid, verify your answer is valid by passing it as the response argument of the arthur tool. 
-        
-        Generate new responses until it passes all validation checks, then respond to the user.""",
+        When using the arthur_tool, pass the prompt/response directly to the tool without adding additional instructions or modifying it in any way.
+        """,
         tools=[arthur_tool],
     )
 )
@@ -130,47 +129,13 @@ Here's an example of how the tool validates prompts and responses:
 │ │ [                                                                        │ │
 │ │   {                                                                      │ │
 │ │     "tool.name": "wrapped_function",                                     │ │
-│ │     "tool.args": "{\"prompt\":\"What is the capital of france?\"}"       │ │
-│ │   }                                                                      │ │
-│ │ ]                                                                        │ │
-│ ╰──────────────────────────────────────────────────────────────────────────╯ │
-│ ╭─ USAGE ──────────────────────────────────────────────────────────────────╮ │
-│ │ {                                                                        │ │
-│ │   "input_tokens": 460,                                                   │ │
-│ │   "output_tokens": 21                                                    │ │
-│ │ }                                                                        │ │
-│ ╰──────────────────────────────────────────────────────────────────────────╯ │
-╰──────────────────────────────────────────────────────────────────────────────╯
-╭─────────────────────── EXECUTE_TOOL: wrapped_function ───────────────────────╮
-│ ╭─ Input ──────────────────────────────────────────────────────────────────╮ │
-│ │ {                                                                        │ │
-│ │   "prompt": "What is the capital of france?"                             │ │
-│ │ }                                                                        │ │
-│ ╰──────────────────────────────────────────────────────────────────────────╯ │
-│ ╭─ OUTPUT ─────────────────────────────────────────────────────────────────╮ │
-│ │ {'inference_id': '9e14d766-41d5-4884-9417-a294db0b8951', 'rule_results': │ │
-│ │ [{'id': '5e4003f1-a951-41d0-86d7-08f35031d415', 'name': 'Prompt          │ │
-│ │ Injection', 'rule_type': 'PromptInjectionRule', 'scope': 'task',         │ │
-│ │ 'result': 'Pass', 'latency_ms': 125, 'details': None}, {'id':            │ │
-│ │ '335e1497-e2c8-44a6-a4b2-88cd63caf791', 'name': 'Toxicity', 'rule_type': │ │
-│ │ 'ToxicityRule', 'scope': 'task', 'result': 'Pass', 'latency_ms': 54,     │ │
-│ │ 'details': {'score': None, 'message': 'No toxicity detected!',           │ │
-│ │ 'toxicity_score': 4.757278293254785e-05, 'toxicity_violation_type':      │ │
-│ │ 'benign'}}], 'user_id': '2dbde4b4-1e78-4784-ae82-6f79c498a66b'}          │ │
-│ ╰──────────────────────────────────────────────────────────────────────────╯ │
-╰──────────────────────────────────────────────────────────────────────────────╯
-╭───────────────────────────── CALL_LLM: gpt-4.1 ──────────────────────────────╮
-│ ╭─ OUTPUT ─────────────────────────────────────────────────────────────────╮ │
-│ │ [                                                                        │ │
-│ │   {                                                                      │ │
-│ │     "tool.name": "wrapped_function",                                     │ │
 │ │     "tool.args": "{\"prompt\":\"What is the capital of france?\",\"respo │ │
 │ │   }                                                                      │ │
 │ │ ]                                                                        │ │
 │ ╰──────────────────────────────────────────────────────────────────────────╯ │
 │ ╭─ USAGE ──────────────────────────────────────────────────────────────────╮ │
 │ │ {                                                                        │ │
-│ │   "input_tokens": 732,                                                   │ │
+│ │   "input_tokens": 344,                                                   │ │
 │ │   "output_tokens": 31                                                    │ │
 │ │ }                                                                        │ │
 │ ╰──────────────────────────────────────────────────────────────────────────╯ │
@@ -183,7 +148,7 @@ Here's an example of how the tool validates prompts and responses:
 │ │ }                                                                        │ │
 │ ╰──────────────────────────────────────────────────────────────────────────╯ │
 │ ╭─ OUTPUT ─────────────────────────────────────────────────────────────────╮ │
-│ │ {'inference_id': '3d304f02-289d-4a74-8239-db776c0e14dc', 'rule_results': │ │
+│ │ {'inference_id': 'ada815d2-bc91-4d94-b7fe-fe615bc4c94d', 'rule_results': │ │
 │ │ [{'id': '335e1497-e2c8-44a6-a4b2-88cd63caf791', 'name': 'Toxicity',      │ │
 │ │ 'rule_type': 'ToxicityRule', 'scope': 'task', 'result': 'Pass',          │ │
 │ │ 'latency_ms': 27, 'details': {'score': None, 'message': 'No toxicity     │ │
@@ -197,8 +162,9 @@ Here's an example of how the tool validates prompts and responses:
 │ ╰──────────────────────────────────────────────────────────────────────────╯ │
 │ ╭─ USAGE ──────────────────────────────────────────────────────────────────╮ │
 │ │ {                                                                        │ │
-│ │   "input_tokens": 920,                                                   │ │
+│ │   "input_tokens": 531,                                                   │ │
 │ │   "output_tokens": 8                                                     │ │
 │ │ }                                                                        │ │
 │ ╰──────────────────────────────────────────────────────────────────────────╯ │
-╰──────────────────────────────────────────────────────────────────────────────
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
